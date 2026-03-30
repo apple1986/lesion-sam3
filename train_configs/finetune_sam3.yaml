@@ -1,0 +1,33 @@
+# @package _global_
+
+defaults:
+  - loss: detection
+  - optim: adamw
+  - trainer: default
+  - data: roboflow
+  - model: sam3_image
+  - _self_
+
+paths:
+  roboflow_vl_100_root: /home/gxu/proj1/lesionSeg/sam3_brain/dataset_mets/roboflow_v100
+  experiment_log_dir: /home/gxu/proj1/lesionSeg/sam3_brain/checkpoint_exp
+  bpe_path: /home/gxu/proj1/lesionSeg/sam3_brain/assets/bpe_simple_vocab_16e6.txt.gz
+
+scratch:
+  enable_segmentation: false
+  resolution: 1008
+
+  train_norm_mean: [0.5, 0.5, 0.5]
+  train_norm_std:  [0.5, 0.5, 0.5]
+
+  lr_scale: 0.1
+  lr_transformer: ${times:8e-4,${scratch.lr_scale}}
+  lr_vision_backbone: ${times:2.5e-4,${scratch.lr_scale}}
+  lr_language_backbone: ${times:5e-5,${scratch.lr_scale}}
+
+  wd: 0.1
+  lrd_vision_backbone: 0.9
+
+  scheduler_timescale: 20
+  scheduler_warmup: 20
+  scheduler_cooldown: 20

@@ -1,0 +1,44 @@
+optim:
+  amp:
+    enabled: true
+    amp_dtype: bfloat16
+
+  optimizer:
+    _target_: torch.optim.AdamW
+
+  gradient_clip:
+    _target_: sam3.train.optim.optimizer.GradientClipper
+    max_norm: 0.1
+    norm_type: 2
+
+  param_group_modifiers:
+    - _target_: sam3.train.optim.optimizer.layer_decay_param_modifier
+      _partial_: true
+      layer_decay_value: ${scratch.lrd_vision_backbone}
+      apply_to: backbone.vision_backbone.trunk
+
+  options:
+    lr:
+      - scheduler:
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_transformer}
+          timescale: ${scratch.scheduler_timescale}
+          warmup_steps: ${scratch.scheduler_warmup}
+          cooldown_steps: ${scratch.scheduler_cooldown}
+
+      - scheduler:
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_vision_backbone}
+        param_names:
+          - backbone.vision_backbone.*
+
+      - scheduler:
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_language_backbone}
+        param_names:
+          - backbone.language_backbone.*
+
+    weight_decay:
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+          value: ${scratch.wd}

@@ -1,0 +1,34 @@
+_target_: sam3.train.loss.sam3_loss.Sam3LossWrapper
+
+matcher: ${scratch.matcher}
+o2m_weight: 2.0
+
+o2m_matcher:
+  _target_: sam3.train.matcher.BinaryOneToManyMatcher
+  alpha: 0.3
+  threshold: 0.4
+  topk: 4
+
+use_o2m_matcher_on_o2m_aux: false
+
+loss_fns_find:
+  - _target_: sam3.train.loss.loss_fns.Boxes
+    weight_dict:
+      loss_bbox: 5.0
+      loss_giou: 2.0
+
+  - _target_: sam3.train.loss.loss_fns.IABCEMdetr
+    weak_loss: false
+    weight_dict:
+      loss_ce: 20.0
+      presence_loss: 20.0
+    pos_weight: 10.0
+    alpha: 0.25
+    gamma: 2
+    use_presence: true
+    pos_focal: false
+    pad_n_queries: 200
+    pad_scale_pos: 1.0
+
+loss_fn_semantic_seg: null
+scale_by_find_batch_size: ${scratch.scale_by_find_batch_size}

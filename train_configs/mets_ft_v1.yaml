@@ -1,0 +1,103 @@
+# sam3_medical_ft_min.yaml
+# =============================
+# SAM3 Medical Fine-tuning YAML
+# For manual training script (freeze vision & text encoders)
+# Detection + mask + semantic segmentation
+# =============================
+
+model:
+  freeze_vision_encoder: true
+  freeze_text_encoder: true
+  enable_segmentation: true  # enable mask + semantic branch
+
+training:
+  device: cuda:1
+  image_size: 1008
+  batch_size: 1
+  epochs: 10
+  lr: 1e-6
+  weight_decay: 1e-4
+  accum_steps: 2 #10
+  mixed_precision: fp16
+  gradient_clip_norm: 0.1
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: ${training.lr}
+  weight_decay: ${training.weight_decay}
+
+matcher:
+  _target_: sam3.train.matcher.BinaryHungarianMatcherV2
+  focal: true
+  cost_class: 4.0
+  cost_bbox: 1.0
+  cost_giou: 2.0
+  alpha: 0.25
+  gamma: 2.0
+  stable: false
+
+o2m_matcher:
+  _target_: sam3.train.matcher.BinaryOneToManyMatcher
+  alpha: 0.5
+  threshold: 0.4
+  topk: 2
+
+loss:
+  _target_: sam3.train.loss.sam3_loss.Sam3LossWrapper
+  matcher: ${matcher}
+  o2m_weight: 0.1
+  o2m_matcher: ${o2m_matcher}
+  use_o2m_matcher_on_o2m_aux: false
+  scale_by_find_batch_size: true
+
+  # Object detection and segmentation
+  loss_fns_find:
+    # Box regression
+    - _target_: sam3.train.loss.loss_fns.Boxes
+      weight_dict:
+        loss_bbox: 0.005
+        loss_giou: 0.05
+
+    # Classification + presence
+    - _target_: sam3.train.loss.loss_fns.IABCEMdetr
+      weak_loss: false
+      use_presence: true
+      pos_weight: 5.0
+      alpha: 0.25
+      gamma: 2.0
+      pos_focal: false
+      pad_n_queries: 200
+      pad_scale_pos: 1.0
+      weight_dict:
+        loss_ce: 2.0
+        presence_loss: 5.0
+
+    # Mask loss (medical segmentation)
+    - _target_: sam3.train.loss.loss_fns.Masks
+      focal_alpha: 0.25
+      focal_gamma: 2.0
+      compute_aux: false
+      weight_dict:
+        loss_mask: 20.0
+        loss_dice: 5.0
+
+  # Semantic segmentation branch
+  loss_fn_semantic_seg:
+    _target_: sam3.train.loss.loss_fns.SemanticSegCriterion
+    presence_head: true
+    presence_loss: false
+    focal: true
+    focal_alpha: 0.6
+    focal_gamma: 2.0
+    downsample: false
+    weight_dict:
+      loss_semantic_seg: 10.0
+      loss_semantic_dice: 5.0
+      loss_semantic_presence: 1.0
+
+scheduler:
+  _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+  base_lr: ${training.lr}
+  warmup_steps: 50
+  cooldown_steps: 50
+  timescale: 50

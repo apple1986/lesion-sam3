@@ -1,0 +1,180 @@
+# sam3_medical_ft_min.yaml
+# =============================
+# SAM3 Medical Fine-tuning YAML
+# For manual training script (freeze vision & text encoders)
+# Detection + mask + semantic segmentation
+# =============================
+
+model:
+  freeze_vision_encoder: true
+  freeze_text_encoder: true
+  enable_segmentation: false  # enable mask + semantic branch
+
+training:
+  device: cuda:0
+  image_size: 1008
+  batch_size: 1
+  epochs: 10
+  # lr: 1e-6
+  # weight_decay: 1e-4
+  accum_steps: 10 #10
+  mixed_precision: fp16
+  # gradient_clip_norm: 0.1
+  save_folder: brats_mets_ft_part_vis_adp_loss_det_conf_v2_change_lr
+
+# =============================
+# Optim / Scheduler (Hydra-safe)
+# =============================
+
+scratch:
+  lr_scale: 0.1
+
+  lr_transformer: 1e-5        # 8e-5,, 1e-5 , 2e-5 
+  lr_vision_backbone: 1e-4  # 2.5e-5, 5e-6, 8e-6
+  lr_language_backbone: 1e-6  # 5e-6, 1e-6, 1e-6
+
+  lrd_vision_backbone: 0.9
+  wd: 0.1
+
+  scheduler_timescale: 20
+  scheduler_warmup: 20
+  scheduler_cooldown: 20
+
+optim:
+  amp:
+    enabled: True
+    amp_dtype: bfloat16
+
+  optimizer:
+    _target_: torch.optim.AdamW
+
+  gradient_clip:
+    _target_: sam3.train.optim.optimizer.GradientClipper
+    max_norm: 0.1
+    norm_type: 2
+
+  param_group_modifiers:
+    - _target_: sam3.train.optim.optimizer.layer_decay_param_modifier
+      _partial_: True
+      layer_decay_value: ${scratch.lrd_vision_backbone}
+      apply_to: 'backbone.vision_backbone.trunk'
+      overrides:
+        - pattern: '*pos_embed*'
+          value: 1.0
+
+  options:
+    lr:
+      - scheduler:  # transformer and class_embed
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_transformer}
+          timescale: ${scratch.scheduler_timescale}
+          warmup_steps: ${scratch.scheduler_warmup}
+          cooldown_steps: ${scratch.scheduler_cooldown}
+      - scheduler:
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_vision_backbone}
+          timescale: ${scratch.scheduler_timescale}
+          warmup_steps: ${scratch.scheduler_warmup}
+          cooldown_steps: ${scratch.scheduler_cooldown}
+        param_names:
+          - 'backbone.vision_backbone.*'
+      - scheduler:
+          _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+          base_lr: ${scratch.lr_language_backbone}
+          timescale: ${scratch.scheduler_timescale}
+          warmup_steps: ${scratch.scheduler_warmup}
+          cooldown_steps: ${scratch.scheduler_cooldown}
+        param_names:
+          - 'backbone.language_backbone.*'
+
+    weight_decay:
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+          value: ${scratch.wd}
+      - scheduler:
+          _target_: fvcore.common.param_scheduler.ConstantParamScheduler
+          value: 0.0
+        param_names:
+          - '*bias*'
+        module_cls_names: ['torch.nn.LayerNorm']
+
+
+loss:
+  _target_: sam3.train.loss.sam3_loss.Sam3LossWrapper
+
+  matcher:
+    _target_: sam3.train.matcher.BinaryHungarianMatcherV2
+    focal: true
+    cost_class: 4.0
+    cost_bbox: 1.0
+    cost_giou: 2.0
+    alpha: 0.25
+    gamma: 2.0
+    stable: false
+
+  # ---------- One-to-Many Matching ----------
+  o2m_weight: 0.1
+  o2m_matcher:
+    _target_: sam3.train.matcher.BinaryOneToManyMatcher
+    alpha: 0.5
+    threshold: 0.4
+    topk: 2
+
+  use_o2m_matcher_on_o2m_aux: false
+  scale_by_find_batch_size: true
+
+  # ---------- Object Finding + Segmentation ----------
+  loss_fns_find:
+    # Bounding box regression
+    - _target_: sam3.train.loss.loss_fns.Boxes
+      weight_dict:
+        loss_bbox: 0.005
+        loss_giou: 0.05
+
+    # Classification + presence
+    - _target_: sam3.train.loss.loss_fns.IABCEMdetr
+      weak_loss: false
+      use_presence: true
+      pos_weight: 5.0
+      alpha: 0.25
+      gamma: 2.0
+      pos_focal: false
+      pad_n_queries: 200
+      pad_scale_pos: 1.0
+      weight_dict:
+        loss_ce: 2.0
+        presence_loss: 5.0
+
+    # Mask loss
+    - _target_: sam3.train.loss.loss_fns.Masks
+      focal_alpha: 0.25
+      focal_gamma: 2.0
+      compute_aux: false
+      weight_dict:
+        loss_mask: 20.0
+        loss_dice: 5.0
+
+  # ---------- Semantic Segmentation ----------
+  loss_fn_semantic_seg: null # changed from below to null
+    # _target_: sam3.train.loss.loss_fns.SemanticSegCriterion
+    # presence_head: true
+    # presence_loss: false
+    # focal: true
+    # focal_alpha: 0.6
+    # focal_gamma: 2.0
+    # downsample: false
+    # weight_dict:
+    #   loss_semantic_seg: 20.0     # ✅ restored
+    #   loss_semantic_dice: 10.0    # ✅ restored
+    #   loss_semantic_presence: 1.0
+
+
+# scheduler:
+#   _target_: sam3.train.optim.schedulers.InverseSquareRootParamScheduler
+#   base_lr: ${training.lr}
+#   warmup_steps: 1
+#   cooldown_steps: 1
+#   timescale: 1
+
+
+
