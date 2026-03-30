@@ -106,7 +106,7 @@ year={2026},
 eprint={2603.25945},
 archivePrefix={arXiv},
 primaryClass={eess.IV},
-url={https://arxiv.org/abs/2603.25945}
+url=https://arxiv.org/abs/2603.25945
 
 }
 
