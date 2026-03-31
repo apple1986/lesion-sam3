@@ -1,0 +1,15 @@
+imagesTr/lung_048.nii.gz labelsTr/lung_048.nii.gz
+imagesTr/lung_093.nii.gz labelsTr/lung_093.nii.gz
+imagesTr/lung_018.nii.gz labelsTr/lung_018.nii.gz
+imagesTr/lung_092.nii.gz labelsTr/lung_092.nii.gz
+imagesTr/lung_046.nii.gz labelsTr/lung_046.nii.gz
+imagesTr/lung_043.nii.gz labelsTr/lung_043.nii.gz
+imagesTr/lung_084.nii.gz labelsTr/lung_084.nii.gz
+imagesTr/lung_023.nii.gz labelsTr/lung_023.nii.gz
+imagesTr/lung_022.nii.gz labelsTr/lung_022.nii.gz
+imagesTr/lung_020.nii.gz labelsTr/lung_020.nii.gz
+imagesTr/lung_071.nii.gz labelsTr/lung_071.nii.gz
+imagesTr/lung_057.nii.gz labelsTr/lung_057.nii.gz
+imagesTr/lung_027.nii.gz labelsTr/lung_027.nii.gz
+imagesTr/lung_086.nii.gz labelsTr/lung_086.nii.gz
+imagesTr/lung_066.nii.gz labelsTr/lung_066.nii.gz
