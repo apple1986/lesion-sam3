@@ -2,7 +2,7 @@
 
 **Adapting Segment Anything Model 3 for Concept-Driven Lesion Segmentation in Medical Images: An Experimental Study**
 
-📄 Paper: https://arxiv.org/abs/2603.25945  
+📄 Paper: https://arxiv.org/abs/2603.25945  and  https://link.springer.com/article/10.1186/s42492-026-00234-0
 📦 Code: https://github.com/apple1986/lesion-sam3  
 📦 Dataset: please check the dataset folder to find all the datasets splitting.
 
@@ -100,15 +100,15 @@ We thank the open-source community for advancing foundation models and medical i
 ## 📚 Citation
 
 If you find this work useful, please cite:
-@misc{xu2026adaptingsegmentmodel3,
-title={Adapting Segment Anything Model 3 for Concept-Driven Lesion Segmentation in Medical Images: An Experimental Study},
-author={Guoping Xu and Jayaram K. Udupa and Yubing Tong and Xin Long and Ying Zhang and Jie Deng and Weiguo Lu and You Zhang},
-year={2026},
-eprint={2603.25945},
-archivePrefix={arXiv},
-primaryClass={eess.IV},
-url=https://arxiv.org/abs/2603.25945
-
+@article{xu2026adapting,
+  title={Adapting Segment Anything Model 3 for concept-driven lesion segmentation in medical images: an experimental study},
+  author={Xu, Guoping and Udupa, Jayaram K and Tong, Yubing and Long, Xin and Zhang, Ying and Deng, Jie and Lu, Weiguo and Zhang, You},
+  journal={Visual Computing for Industry, Biomedicine, and Art},
+  volume={9},
+  number={1},
+  pages={23},
+  year={2026},
+  publisher={Springer}
 }
 
 ---
