@@ -100,6 +100,7 @@ We thank the open-source community for advancing foundation models and medical i
 ## 📚 Citation
 
 If you find this work useful, please cite:
+```bibtex
 @article{xu2026adapting,
   title={Adapting Segment Anything Model 3 for concept-driven lesion segmentation in medical images: an experimental study},
   author={Xu, Guoping and Udupa, Jayaram K and Tong, Yubing and Long, Xin and Zhang, Ying and Deng, Jie and Lu, Weiguo and Zhang, You},
@@ -110,6 +111,8 @@ If you find this work useful, please cite:
   year={2026},
   publisher={Springer}
 }
+```
+
 
 ---
 
