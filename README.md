@@ -2,7 +2,7 @@
 
 **Adapting Segment Anything Model 3 for Concept-Driven Lesion Segmentation in Medical Images: An Experimental Study**
 
-📄 Paper: https://arxiv.org/abs/2603.25945  and  https://link.springer.com/article/10.1186/s42492-026-00234-0
+📄 Paper: https://arxiv.org/abs/2603.25945  and  https://link.springer.com/article/10.1186/s42492-026-00234-0    
 📦 Code: https://github.com/apple1986/lesion-sam3  
 📦 Dataset: please check the dataset folder to find all the datasets splitting.
 
